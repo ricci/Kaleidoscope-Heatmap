@@ -28,6 +28,7 @@ class Heatmap : public LEDMode {
 
   static uint16_t update_delay;
   static bool clear_on_saturation;
+  static bool log_scale;
   static uint8_t key_saturation;
   static uint16_t total_saturation;
 
@@ -42,10 +43,12 @@ class Heatmap : public LEDMode {
   static uint32_t end_time_;
 
   static const float heat_colors_[][3];
+  static const cRGB log_colors_[][3];
 
   static void shiftStats(void);
   static void clearStats(void);
   static cRGB computeColor(float v);
+  static cRGB computeColorLog(uint8_t v);
 
   static Key eventHook(Key mapped_key, byte row, byte col, uint8_t key_state);
   static void loopHook(bool is_post_clear);
