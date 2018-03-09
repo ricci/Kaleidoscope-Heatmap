@@ -30,7 +30,8 @@ uint8_t Heatmap::key_saturation = 254;
 uint16_t Heatmap::total_saturation = 16000;
 uint32_t Heatmap::end_time_;
 
-const float Heatmap::heat_colors_[][3] = {{0.0, 0.0, 0.0}, {0.1, 1.0, 0.1}, {1, 1, 0.1}, {1, 0.1, 0.1}};
+const float Heatmap::heat_colors_[][3] = {{0.0, 0.0, 0.0}, {0.1, 0.1, 1},
+    {0.1, 1, 1}, {0.1, 1, 0.1}, {1, 1, 0.1}, {1, 0.1, 0.1}};
 
 void Heatmap::shiftStats(void) {
   highest_count_ = total_keys_ = 0;
@@ -60,9 +61,9 @@ cRGB Heatmap::computeColor(float v) {
   if (v <= 0) {
     idx1 = idx2 = 0;
   } else if (v >= 1) {
-    idx1 = idx2 = 3;
+    idx1 = idx2 = 5;
   } else {
-    float val = v * 3;
+    float val = v * 5;
     idx1 = static_cast<int>(floor(val));
     idx2 = idx1 + 1;
     fb = val - static_cast<float>(idx1);
