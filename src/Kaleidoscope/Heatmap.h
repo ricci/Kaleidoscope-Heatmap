@@ -27,6 +27,9 @@ class Heatmap : public LEDMode {
   Heatmap(void);
 
   static uint16_t update_delay;
+  static bool clear_on_saturation;
+  static uint8_t key_saturation;
+  static uint16_t total_saturation;
 
  protected:
   void setup(void) final;
@@ -41,6 +44,7 @@ class Heatmap : public LEDMode {
   static const float heat_colors_[][3];
 
   static void shiftStats(void);
+  static void clearStats(void);
   static cRGB computeColor(float v);
 
   static Key eventHook(Key mapped_key, byte row, byte col, uint8_t key_state);

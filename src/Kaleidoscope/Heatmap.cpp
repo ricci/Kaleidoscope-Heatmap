@@ -25,9 +25,12 @@ uint8_t Heatmap::heatmap_[ROWS][COLS];
 uint16_t Heatmap::total_keys_;
 uint8_t Heatmap::highest_count_;
 uint16_t Heatmap::update_delay = 500;
+bool Heatmap::clear_on_saturation = false;
+uint8_t Heatmap::key_saturation = 254;
+uint16_t Heatmap::total_saturation = 16000;
 uint32_t Heatmap::end_time_;
 
-const float Heatmap::heat_colors_[][3] = {{0.0, 0.0, 0.0}, {0.1, 1, 0.1}, {1, 1, 0.1}, {1, 0.1, 0.1}};
+const float Heatmap::heat_colors_[][3] = {{0.0, 0.0, 0.0}, {0.1, 1.0, 0.1}, {1, 1, 0.1}, {1, 0.1, 0.1}};
 
 void Heatmap::shiftStats(void) {
   highest_count_ = total_keys_ = 0;
@@ -37,6 +40,15 @@ void Heatmap::shiftStats(void) {
       total_keys_ += heatmap_[r][c];
       if (heatmap_[r][c] > highest_count_)
         highest_count_ = heatmap_[r][c];
+    }
+  }
+}
+
+void Heatmap::clearStats(void) {
+  highest_count_ = total_keys_ = 0;
+  for (uint8_t r = 0; r < ROWS; r++) {
+    for (uint8_t c = 0; c < COLS; c++) {
+      heatmap_[r][c] = 0;
     }
   }
 }
@@ -81,7 +93,9 @@ Key Heatmap::eventHook(Key mapped_key, byte row, byte col, uint8_t key_state) {
     return mapped_key;
 
   total_keys_++;
-  heatmap_[row][col]++;
+  if (heatmap_[row][col] < Heatmap::key_saturation) {
+      heatmap_[row][col]++;
+  }
   if (heatmap_[row][col] > highest_count_)
     highest_count_ = heatmap_[row][col];
 
@@ -90,8 +104,13 @@ Key Heatmap::eventHook(Key mapped_key, byte row, byte col, uint8_t key_state) {
 
 void
 Heatmap::loopHook(bool is_post_clear) {
-  if (highest_count_ > 191 || total_keys_ > 16000)
-    shiftStats();
+  if (total_keys_ > total_saturation) {
+    if (Heatmap::clear_on_saturation) {
+      clearStats();
+    } else {
+      shiftStats();
+    }
+  }
 }
 
 void
@@ -103,8 +122,8 @@ Heatmap::update(void) {
 
   for (uint8_t r = 0; r < ROWS; r++) {
     for (uint8_t c = 0; c < COLS; c++) {
-      uint8_t cap = max(total_keys_, 1);
-      float v = static_cast<float>(heatmap_[r][c]) / cap;
+      uint8_t cap = highest_count_;
+      float v = static_cast<float>(heatmap_[r][c]) / Heatmap::key_saturation;
       ::LEDControl.setCrgbAt(r, c, computeColor(v));
     }
   }
